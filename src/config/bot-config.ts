@@ -9,6 +9,8 @@ export type BotConfig = {
   searchTerms: string[];
   yearsOfExperience: number;
   autoRun: AutoRunConfig;
+  apiToken: string;
+  whatsapp: boolean;
 };
 
 export type AutoRunConfig = {
@@ -61,6 +63,8 @@ export function loadBotConfig(env: NodeJS.ProcessEnv = process.env): BotConfig {
           .filter(Boolean)
       : DEFAULT_SEARCH_TERMS,
     yearsOfExperience: toNumber(env.BOT_YEARS_OF_EXPERIENCE, 5),
+    apiToken: env.BOT_API_TOKEN ?? '',
+    whatsapp: env.BOT_WHATSAPP === 'true',
     autoRun: {
       enabled: env.BOT_AUTO_RUN === 'true',
       everyMinutes: toNumber(env.BOT_AUTO_EVERY_MIN, 90),

@@ -10,5 +10,6 @@ import { OutreachRunner } from './outreach-runner.service';
   imports: [BrowserModule, PostsModule, StoreModule],
   providers: [OutreachRunner, AutoRunService],
   controllers: [ControlController],
+  exports: [OutreachRunner, AutoRunService, StoreModule],
 })
 export class OutreachModule {}

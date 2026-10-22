@@ -155,6 +155,7 @@ Tudo é opcional: sem `.env`, o bot usa os padrões abaixo. Mudou o `.env`? Rein
 | `BOT_AUTO_MAX_PER_RUN` | `4` | abordagens novas por rodada automática |
 | `BOT_AUTO_LIVE` | `false` | `true` = de verdade; `false` = só simula (dry-run) |
 | `VNC_PASSWORD` | vazio | (Docker) senha da tela do Chrome em `localhost:6080` |
+| `BOT_API_TOKEN` | vazio | token exigido nas chamadas que não vêm da própria máquina |
 
 > Os limites valem **por cima de tudo**: mesmo com o automático ligado, ele para ao chegar em `BOT_LIMIT_PER_DAY`. O bloqueio de busca que tivemos em 21/10/2026 veio de ~90 abordagens em 2 dias sem teto, então não suba muito esses números.
 

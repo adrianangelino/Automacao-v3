@@ -15,6 +15,8 @@ import { PostsService } from '../posts/posts.service';
 import { OutreachStore } from '../store/outreach-store';
 import type { OutreachRow } from '../store/outreach-store';
 import { screenCard } from './screen-card';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OUTREACH_EVENTS } from './events';
 
 export type RunOptions = { dryRun: boolean; maxContacts?: number };
 
@@ -53,6 +55,7 @@ export class OutreachRunner {
     private readonly posts: PostsService,
     private readonly store: OutreachStore,
     @Inject(BOT_CONFIG) private readonly config: BotConfig,
+    private readonly events: EventEmitter2,
   ) {
     this.human = new Human(config.pace);
   }
@@ -202,6 +205,10 @@ export class OutreachRunner {
     await page.bringToFront().catch(() => null);
     if (!dryRun && (sent === 'sent' || sent === 'sent?')) {
       this.store.markMessaged(pending.profileUrl, new Date());
+      this.events.emit(OUTREACH_EVENTS.followUp, {
+        name: pending.name,
+        postUrl: pending.postUrl,
+      });
       summary.followUps++;
     }
     await this.human.pause(10_000, 25_000);
@@ -291,6 +298,11 @@ export class OutreachRunner {
     };
     if (sent === 'sent' || sent === 'sent?') {
       this.store.record(entry, new Date(), 'messaged');
+      this.events.emit(OUTREACH_EVENTS.contacted, {
+        ...entry,
+        role,
+        messaged: true,
+      });
       summary.messaged++;
     } else if (
       connect === 'invited' ||
@@ -299,6 +311,11 @@ export class OutreachRunner {
       connect === 'connected'
     ) {
       this.store.record(entry, new Date(), 'invited');
+      this.events.emit(OUTREACH_EVENTS.contacted, {
+        ...entry,
+        role,
+        messaged: false,
+      });
       summary.invited++;
     } else {
       this.store.record(entry, new Date(), 'skipped');
@@ -324,6 +341,7 @@ export class OutreachRunner {
     };
     summary.stopReason = `🚫 bloqueio do LinkedIn: ${check.reason}`;
     this.note(summary.stopReason);
+    this.events.emit(OUTREACH_EVENTS.blocked, { reason: check.reason });
     return true;
   }
 
