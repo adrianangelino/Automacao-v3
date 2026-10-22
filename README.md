@@ -216,7 +216,7 @@ Vaga remota:
 ```
 Hi Natalia, how are you?
 
-I'm Adrian, a Senior Backend Engineer (Node.js, NestJS, TypeScript) based in Brazil. I saw your post about the Senior Full Stack Developer role (https://lnkd.in/p/...) and I'm really interested. I have 5+ years building backend systems and I'm used to working remotely with international teams.
+I'm (SEU NOME), a Senior Backend Engineer (Node.js, NestJS, TypeScript) based in Brazil. I saw your post about the Senior Full Stack Developer role (https://lnkd.in/p/...) and I'm really interested. I have 5+ years building backend systems and I'm used to working remotely with international teams.
 
 Would you be open to a quick call to talk about it?
 ```
