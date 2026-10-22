@@ -1,0 +1,15 @@
+services:
+  bot:
+    build: .
+    container_name: linkedin-bot
+    env_file: .env
+    environment:
+      PORT: 3999
+      TZ: America/Sao_Paulo
+    ports:
+      - '127.0.0.1:3999:3999'
+      - '127.0.0.1:6080:6080'
+    volumes:
+      - ./data:/app/data
+    shm_size: '1gb'
+    restart: unless-stopped

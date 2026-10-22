@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+
+# segredos e sessão do LinkedIn — nunca no git
+.env
+.env.*
+!.env.example
+cookies.json
+
+# dados locais (histórico de abordagens, respostas, prints)
+data/
+*.sqlite
+*.sqlite-journal
+stuck/
+*.log
