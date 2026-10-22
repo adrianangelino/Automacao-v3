@@ -1,8 +1,12 @@
+import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { chromium, Browser, Page } from 'playwright';
 import { readCards } from './post-cards';
 
-describe('readCards', () => {
+const FIXTURE = 'data/fixtures/posts-search.html';
+const describeWithFixture = existsSync(FIXTURE) ? describe : describe.skip;
+
+describeWithFixture('readCards', () => {
   jest.setTimeout(30_000);
 
   let browser: Browser;
@@ -11,7 +15,7 @@ describe('readCards', () => {
   beforeAll(async () => {
     browser = await chromium.launch({ headless: true });
     page = await browser.newPage();
-    const html = await readFile('data/fixtures/posts-search.html', 'utf8');
+    const html = await readFile(FIXTURE, 'utf8');
     await page.setContent(html);
   });
 
@@ -29,7 +33,9 @@ describe('readCards', () => {
     const natalia = cards.find((c) => c.name.startsWith('Natalia'));
 
     expect(natalia).toBeDefined();
-    expect(natalia!.profileUrl).toBe('https://www.linkedin.com/in/itrecruiternataliarodriguez/');
+    expect(natalia!.profileUrl).toBe(
+      'https://www.linkedin.com/in/itrecruiternataliarodriguez/',
+    );
     expect(natalia!.text).toContain('Now Hiring: Senior Full Stack Developer');
     expect(natalia!.isCompany).toBe(false);
   });
@@ -40,7 +46,9 @@ describe('readCards', () => {
 
     expect(ahmad).toBeDefined();
     expect(ahmad!.openToWork).toBe(true);
-    expect(cards.find((c) => c.name.startsWith('Natalia'))!.openToWork).toBe(false);
+    expect(cards.find((c) => c.name.startsWith('Natalia'))!.openToWork).toBe(
+      false,
+    );
   });
 
   it('marca empresa/grupo (RemoteYeah)', async () => {

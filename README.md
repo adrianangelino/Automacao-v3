@@ -273,4 +273,10 @@ data/         banco, perfil do Chrome, logs e prints (fora do git)
 npx jest
 ```
 
-Tudo roda **offline**, sem abrir o LinkedIn. A leitura dos cards (`post-cards.spec.ts`) usa um HTML de busca real salvo em `data/fixtures/posts-search.html`, que fica fora do git porque tem dados de outras pessoas. Sem esse arquivo, só esse teste falha.
+Tudo roda **offline**, sem abrir o LinkedIn. A leitura dos cards (`post-cards.spec.ts`) usa um HTML de busca real salvo em `data/fixtures/posts-search.html`, que fica fora do git porque tem dados de outras pessoas. Sem esse arquivo, esse teste é **pulado** (não falha).
+
+### CI (GitHub Actions)
+
+A cada push e pull request na `main`, o workflow `.github/workflows/tests.yml` roda: checagem de tipos (`tsc`), testes (`jest`) e build. O resultado aparece na aba **Actions** do repositório e no ✅/❌ ao lado de cada commit.
+
+É gratuito: o plano free do GitHub dá 2.000 min/mês para repositórios privados, e cada execução leva ~1 min.
