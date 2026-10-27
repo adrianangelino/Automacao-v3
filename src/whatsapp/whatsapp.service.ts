@@ -9,6 +9,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import makeWASocket, {
   Browsers,
   DisconnectReason,
+  downloadMediaMessage,
   fetchLatestBaileysVersion,
   jidNormalizedUser,
   useMultiFileAuthState,
@@ -28,6 +29,9 @@ import type {
 } from '../outreach/events';
 import { OutreachRunner } from '../outreach/outreach-runner.service';
 import { OutreachStore } from '../store/outreach-store';
+import { CONTENT_MESSAGE, ContentService } from '../content/content.service';
+import type { Reply } from '../content/content.service';
+import { readFileSync } from 'fs';
 import { HELP, parseCommand } from './commands';
 import { formatRecent, formatStatus } from './format';
 
@@ -49,6 +53,7 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     private readonly runner: OutreachRunner,
     private readonly auto: AutoRunService,
     private readonly store: OutreachStore,
+    private readonly content: ContentService,
   ) {}
 
   async onModuleInit() {
@@ -60,13 +65,26 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     void this.socket?.end(undefined);
   }
 
-  async send(text: string): Promise<void> {
+  async send(reply: Reply): Promise<void> {
     const [to] = [...this.selfJids];
     if (!this.socket || !this.connected || !to) return;
-    const sent = await this.socket
-      .sendMessage(to, { text: PREFIX + text })
-      .catch((e: Error) => this.logger.warn(`falha ao enviar: ${e.message}`));
-    if (sent?.key.id) this.sentIds.add(sent.key.id);
+    const socket = this.socket;
+    const text = typeof reply === 'string' ? reply : reply.text;
+    const images = typeof reply === 'string' ? [] : reply.images;
+
+    const messages = images.length
+      ? images.map((path, i) => ({
+          image: readFileSync(path),
+          ...(i === 0 ? { caption: PREFIX + text } : {}),
+        }))
+      : [{ text: PREFIX + text }];
+
+    for (const content of messages) {
+      const sent = await socket
+        .sendMessage(to, content)
+        .catch((e: Error) => this.logger.warn(`falha ao enviar: ${e.message}`));
+      if (sent?.key.id) this.sentIds.add(sent.key.id);
+    }
   }
 
   @OnEvent(OUTREACH_EVENTS.contacted)
@@ -76,6 +94,11 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
       : 'conexão (mensagem vai quando aceitar)';
     const role = e.role ? ` — ${e.role}` : '';
     return this.send(`✅ ${e.name}${role} [${e.kind}]\n${what}\n${e.postUrl}`);
+  }
+
+  @OnEvent(CONTENT_MESSAGE)
+  onContentMessage(text: string) {
+    return this.send(text);
   }
 
   @OnEvent(OUTREACH_EVENTS.followUp)
@@ -156,13 +179,26 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     if (!this.selfJids.has(jidNormalizedUser(jid))) return;
     if (message.key.id && this.sentIds.delete(message.key.id)) return;
 
+    const image = message.message?.imageMessage;
+    if (image) {
+      const buffer = await downloadMediaMessage(message, 'buffer', {});
+      const answer = await this.content.handle({
+        image: buffer,
+        mimetype: image.mimetype ?? undefined,
+      });
+      if (answer) await this.send(answer);
+      if (!image.caption) return;
+    }
+
     const text =
       message.message?.conversation ??
       message.message?.extendedTextMessage?.text ??
+      image?.caption ??
       '';
     if (!text || text.startsWith(PREFIX)) return;
 
-    await this.send(this.reply(text));
+    const answer = await this.content.handle({ text });
+    await this.send(answer ?? this.reply(text));
   }
 
   private reply(text: string): string {

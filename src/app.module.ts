@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { ApiTokenGuard } from './auth/api-token.guard';
 import { BrowserModule } from './browser/browser.module';
 import { BotConfigModule } from './config/bot-config.module';
@@ -11,6 +13,10 @@ import { WhatsAppModule } from './whatsapp/whatsapp.module';
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'web', 'dist'),
+      serveRoot: '/painel',
+    }),
     BotConfigModule,
     BrowserModule,
     PostsModule,
