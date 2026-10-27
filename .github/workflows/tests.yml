@@ -18,6 +18,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
 
       - run: npm ci
 
@@ -29,3 +32,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Painel (lint + build)
+        run: |
+          npm --prefix web ci
+          npm --prefix web run lint
+          npm --prefix web run build

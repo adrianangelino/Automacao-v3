@@ -37,4 +37,6 @@ export const HELP = [
   '• simular — rodada sem mandar nada',
   '• parar — para a rodada atual',
   '• pausar / ligar — automático',
+  '• post — montar um post agora',
+  '• ver — prévia do post',
 ].join('\n');

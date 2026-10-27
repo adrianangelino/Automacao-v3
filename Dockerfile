@@ -13,6 +13,9 @@ COPY tsconfig.json tsconfig.build.json nest-cli.json ./
 COPY src ./src
 RUN npm run build && npm prune --omit=dev
 
+COPY web ./web
+RUN npm --prefix web ci && npm --prefix web run build
+
 
 FROM mcr.microsoft.com/playwright:v1.64.1-noble
 
@@ -30,6 +33,7 @@ ENV NODE_ENV=production \
 
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/web/dist ./web/dist
 COPY package.json ./
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

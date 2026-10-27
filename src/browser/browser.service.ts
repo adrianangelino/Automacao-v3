@@ -49,6 +49,11 @@ export class BrowserService implements OnModuleDestroy {
     return this.profileTab;
   }
 
+  async newTab(): Promise<Page> {
+    const context = await this.getContext();
+    return context.newPage();
+  }
+
   isOpen(): boolean {
     return !!this.context;
   }
